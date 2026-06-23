@@ -65,6 +65,12 @@ main { max-width: 1800px; min-height: 100vh; margin-left: 272px; padding: 48px c
 }
 .page-head p { max-width: 680px; margin: 12px 0 0; color: var(--muted); font-size: 15px; }
 .eyebrow { color: var(--blue-dark); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+.header-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
+.import-form { display: flex; align-items: center; gap: 8px; }
+.import-form input[type="file"] {
+  width: 230px; min-height: 44px; padding: 8px 10px; border: 2px solid var(--ink);
+  border-radius: 8px; background: white; font-size: 13px;
+}
 
 .primary, .outline, .ghost, .icon, .card-actions a, .card-actions button {
   min-height: 44px; border-radius: 8px; font-size: 14px; font-weight: 750; transition: .18s ease;
@@ -105,13 +111,20 @@ tbody tr:hover td { background: var(--surface-blue); }
 tbody tr:last-child td { border-bottom: 0; }
 td strong { font-size: 15px; font-weight: 750; }
 .empty { padding: 50px 24px; color: var(--muted); font-size: 15px; }
+.sort-link { display: inline-flex; align-items: center; gap: 7px; color: inherit; text-decoration: none; }
+.sort-link span {
+  display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid rgba(255,255,255,.45);
+  border-radius: 50%; color: var(--orange); font-size: 12px; line-height: 1;
+}
+.sort-link:hover { color: var(--orange); }
 
 .status { padding: 6px 10px; border: 1px solid currentColor; border-radius: 999px; font-size: 12px; font-weight: 850; }
 .status.sent { background: #dff7e9; color: var(--success); }
 .status.failed { background: #ffe5e2; color: var(--danger); }
 .status.processing { background: var(--surface-blue); color: var(--blue-dark); }
 .status.muted { background: #e8ecea; color: #56605c; }
-.actions { min-width: 180px; }
+.actions { min-width: 180px; text-align: right; white-space: nowrap; }
+.actions-inner { display: inline-flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .icon { min-height: 36px; padding: 7px 10px; border: 1px solid var(--line); background: white; color: var(--blue-dark); }
 .icon:hover { border-color: var(--blue); background: var(--surface-blue); }
 .icon.danger { color: var(--danger); }
@@ -293,6 +306,8 @@ details pre { font-size: 12px; }
 @media (max-width: 640px) {
   .page-head, .page-head.compact { align-items: flex-start; flex-direction: column; }
   .page-head h1, .page-head.compact h1 { font-size: 39px; }
+  .header-actions, .import-form { align-items: stretch; flex-direction: column; width: 100%; }
+  .header-actions .primary, .header-actions .outline, .import-form input[type="file"], .import-form button { width: 100%; }
   .stats, .upcoming-grid, .template-grid, .mail-template-form { grid-template-columns: 1fr; }
   .filter-bar { align-items: stretch; flex-direction: column; }
   .filter-bar input, .filter-bar select { min-width: 0; }

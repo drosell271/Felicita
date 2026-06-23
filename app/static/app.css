@@ -27,8 +27,9 @@ table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { text-align: left; text-transform: uppercase; letter-spacing: .12em; }
 .empty { padding: 48px; text-align: center; }
 .status { display: inline-block; text-transform: uppercase; letter-spacing: .08em; }
-.actions { display: flex; justify-content: flex-end; gap: 10px; }
-.actions form { margin: 0; }
+.actions { text-align: right; white-space: nowrap; }
+.actions-inner { display: flex; justify-content: flex-end; gap: 10px; }
+.actions-inner form { margin: 0; }
 .icon { padding: 0; border: 0; background: none; cursor: pointer; }
 .toast { position: fixed; top: 24px; right: 24px; z-index: 20; padding: 15px 20px; animation: slide-in .25s ease; }
 @keyframes slide-in { from { opacity: 0; transform: translateX(20px); } }

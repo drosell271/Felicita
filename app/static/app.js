@@ -1,6 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => document.getElementById(b.dataset.open).showModal()));
   document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => document.getElementById(b.dataset.close).close()));
+  const contactForm = document.getElementById('contact-form');
+  const contactDialog = document.getElementById('contact-dialog');
+  const resetContactForm = () => {
+    if (!contactForm) return;
+    contactForm.action = '/contacts';
+    contactForm.reset();
+    contactForm.elements.active.checked = true;
+    contactForm.querySelectorAll('button[type="submit"], button:not([type])').forEach(button => {
+      button.disabled = false;
+      if (button.dataset.submitLabel) button.textContent = button.dataset.submitLabel;
+    });
+    const title = document.getElementById('contact-title');
+    if (title) title.textContent = 'Nuevo contacto';
+  };
+  document.querySelectorAll('[data-new-contact]').forEach(button => button.addEventListener('click', () => {
+    resetContactForm();
+    contactDialog?.showModal();
+  }));
+  contactForm?.addEventListener('submit', () => {
+    contactForm.querySelectorAll('button[type="submit"], button:not([type])').forEach(button => {
+      button.disabled = true;
+      if (button.dataset.submitLabel) button.textContent = 'Guardando…';
+    });
+  });
   document.querySelectorAll('.preview-shell img').forEach(img => {
     const shell = img.closest('.preview-shell');
     const done = () => shell?.classList.remove('is-loading');
@@ -13,6 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.edit-contact').forEach(button => button.addEventListener('click', () => {
     const form = document.getElementById('contact-form');
     form.action = `/contacts/${button.dataset.id}`;
+    form.querySelectorAll('button[type="submit"], button:not([type])').forEach(button => {
+      button.disabled = false;
+      if (button.dataset.submitLabel) button.textContent = button.dataset.submitLabel;
+    });
     form.elements.first_name.value = button.dataset.first;
     form.elements.last_name.value = button.dataset.last;
     form.elements.birth_day.value = button.dataset.birthDay;

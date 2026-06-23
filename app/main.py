@@ -1,7 +1,9 @@
+import calendar
+import csv
+import hashlib
+import io
 import logging
 import smtplib
-import calendar
-import hashlib
 from functools import lru_cache
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
@@ -10,7 +12,7 @@ from urllib.parse import quote
 
 from cryptography.fernet import InvalidToken
 from email_validator import EmailNotValidError, validate_email
-from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -34,6 +36,15 @@ from .services.mailer import SMTPConfig, send_card, test_connection
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 settings = get_settings()
 templates = Jinja2Templates(directory="app/templates")
+MONTH_NAMES = ("enero", "febrero", "marzo", "abril", "mayo", "junio",
+               "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre")
+CONTACT_SORTS = {
+    "name": (Contact.first_name, Contact.last_name, Contact.id),
+    "birth": (Contact.birth_date, Contact.first_name, Contact.last_name, Contact.id),
+    "anniversary": (Contact.anniversary_date, Contact.first_name, Contact.last_name, Contact.id),
+}
+CONTACT_CSV_COLUMNS = ("id", "first_name", "last_name", "birth_day", "birth_month",
+                       "birth_date", "anniversary_date", "active")
 
 
 @asynccontextmanager
@@ -68,6 +79,32 @@ def page(request: Request, name: str, **context):
 
 def flash_redirect(path: str, message: str, kind: str = "success"):
     return RedirectResponse(f"{path}?message={quote(message)}&kind={kind}", status_code=303)
+
+
+def format_day_month(value: date | None) -> str:
+    if not value:
+        return "—"
+    return f"{value.day} de {MONTH_NAMES[value.month - 1]}"
+
+
+def years_since(start: date, today: date | None = None) -> int:
+    today = today or date.today()
+    years = today.year - start.year
+    if (today.month, today.day) < (start.month, start.day):
+        years -= 1
+    return max(0, years)
+
+
+def format_anniversary(value: date | None) -> str:
+    if not value:
+        return "—"
+    years = years_since(value)
+    label = "año" if years == 1 else "años"
+    return f"{format_day_month(value)} de {value.year} ({years} {label})"
+
+
+templates.env.filters["day_month"] = format_day_month
+templates.env.filters["anniversary"] = format_anniversary
 
 
 @app.get("/health")
@@ -148,6 +185,7 @@ def _upcoming_events(db: Session, today: date, days: int) -> list[dict]:
 
 @app.get("/contacts", response_class=HTMLResponse)
 def contacts_page(request: Request, q: str = "", active: str = "all",
+                  sort: str = "name", direction: str = "asc",
                   page_number: int = Query(1, alias="page", ge=1), db: Session = Depends(get_db)):
     query = select(Contact)
     count_query = select(func.count()).select_from(Contact)
@@ -162,10 +200,20 @@ def contacts_page(request: Request, q: str = "", active: str = "all",
     total = db.scalar(count_query) or 0
     pages = max(1, (total + settings.page_size - 1) // settings.page_size)
     page_number = min(page_number, pages)
-    contacts = db.scalars(query.order_by(Contact.last_name, Contact.first_name)
+    sort = sort if sort in CONTACT_SORTS else "name"
+    direction = direction if direction in {"asc", "desc"} else "asc"
+    sort_columns = CONTACT_SORTS[sort]
+    order_by = [column.desc() if direction == "desc" else column.asc() for column in sort_columns]
+    contacts = db.scalars(query.order_by(*order_by)
                           .offset((page_number - 1) * settings.page_size).limit(settings.page_size)).all()
+    base_params = f"q={quote(q)}&active={active}&sort={sort}&direction={direction}"
+    sort_links = {}
+    for key in CONTACT_SORTS:
+        next_direction = "desc" if sort == key and direction == "asc" else "asc"
+        sort_links[key] = f"?q={quote(q)}&active={active}&sort={key}&direction={next_direction}&page=1"
     return page(request, "contacts.html", contacts=contacts, q=q, active_filter=active,
-                current_page=page_number, pages=pages, total=total)
+                current_page=page_number, pages=pages, total=total, sort=sort,
+                direction=direction, base_params=base_params, sort_links=sort_links)
 
 
 @app.get("/logs", response_class=HTMLResponse)
@@ -214,6 +262,72 @@ def _contact_values(first_name, last_name, birth_day, birth_month, anniversary_d
                 birth_date=birth, anniversary_date=anniversary, active=active == "on")
 
 
+def _parse_bool(value: str | None, default: bool = True) -> bool:
+    if value is None or not value.strip():
+        return default
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "y", "si", "sí", "on", "activo", "activa"}:
+        return True
+    if normalized in {"0", "false", "no", "off", "inactivo", "inactiva"}:
+        return False
+    raise ValueError(f"estado activo no válido: {value}")
+
+
+def _parse_csv_date(value: str, require_year: bool) -> date | None:
+    value = value.strip()
+    if not value:
+        return None
+    try:
+        parsed = date.fromisoformat(value)
+        return parsed if require_year else date(2000, parsed.month, parsed.day)
+    except ValueError:
+        pass
+    normalized = value.lower().replace(" de ", "/").replace(".", "/").replace("-", "/")
+    parts = [part.strip() for part in normalized.split("/") if part.strip()]
+    if len(parts) == 2 and not require_year:
+        day, month = int(parts[0]), _csv_month_number(parts[1])
+        return date(2000, month, day)
+    if len(parts) == 3:
+        first, second, third = parts
+        if len(first) == 4:
+            year, month, day = int(first), _csv_month_number(second), int(third)
+        else:
+            day, month, year = int(first), _csv_month_number(second), int(third)
+        parsed = date(year, month, day)
+        return parsed if require_year else date(2000, parsed.month, parsed.day)
+    raise ValueError(f"fecha no válida: {value}")
+
+
+def _csv_month_number(value: str) -> int:
+    if value.isdigit():
+        return int(value)
+    normalized = value.strip().lower()
+    if normalized in MONTH_NAMES:
+        return MONTH_NAMES.index(normalized) + 1
+    raise ValueError(f"mes no válido: {value}")
+
+
+def _contact_values_from_csv(row: dict[str, str], active_default: bool = True) -> dict:
+    birth_day = (row.get("birth_day") or "").strip()
+    birth_month = (row.get("birth_month") or "").strip()
+    birth_date = (row.get("birth_date") or "").strip()
+    if birth_date and not birth_day and not birth_month:
+        parsed_birth = _parse_csv_date(birth_date, require_year=False)
+        birth_day = str(parsed_birth.day) if parsed_birth else ""
+        birth_month = str(parsed_birth.month) if parsed_birth else ""
+    anniversary = _parse_csv_date(row.get("anniversary_date") or "", require_year=True)
+    active = "on" if _parse_bool(row.get("active"), default=active_default) else ""
+    return _contact_values(row.get("first_name") or "", row.get("last_name") or "",
+                           birth_day, birth_month, anniversary.isoformat() if anniversary else "", active)
+
+
+def _decode_csv_upload(raw: bytes) -> str:
+    try:
+        return raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1")
+
+
 @app.post("/contacts")
 def create_contact(request: Request, first_name: str = Form(...), last_name: str = Form(...),
                    birth_day: str = Form(""), birth_month: str = Form(""), anniversary_date: str = Form(""),
@@ -222,6 +336,62 @@ def create_contact(request: Request, first_name: str = Form(...), last_name: str
     db.add(Contact(**_contact_values(first_name, last_name, birth_day, birth_month, anniversary_date, active)))
     db.commit()
     return flash_redirect("/contacts", "Contacto creado")
+
+
+@app.get("/contacts/export")
+def export_contacts(request: Request, db: Session = Depends(get_db)):
+    require_auth(request)
+    output = io.StringIO()
+    output.write("\ufeff")
+    writer = csv.DictWriter(output, fieldnames=CONTACT_CSV_COLUMNS, lineterminator="\n")
+    writer.writeheader()
+    contacts = db.scalars(select(Contact).order_by(Contact.first_name, Contact.last_name, Contact.id)).all()
+    for contact in contacts:
+        writer.writerow({
+            "id": contact.id,
+            "first_name": contact.first_name,
+            "last_name": contact.last_name,
+            "birth_day": contact.birth_date.day if contact.birth_date else "",
+            "birth_month": contact.birth_date.month if contact.birth_date else "",
+            "birth_date": f"{contact.birth_date.day:02d}/{contact.birth_date.month:02d}" if contact.birth_date else "",
+            "anniversary_date": contact.anniversary_date.isoformat() if contact.anniversary_date else "",
+            "active": "true" if contact.active else "false",
+        })
+    return Response(output.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": "attachment; filename=contactos.csv"})
+
+
+@app.post("/contacts/import")
+async def import_contacts(request: Request, csrf: str = Form(...), file: UploadFile = File(...),
+                          db: Session = Depends(get_db)):
+    require_auth(request); validate_csrf(request, csrf)
+    if not file.filename.lower().endswith(".csv"):
+        return flash_redirect("/contacts", "El archivo debe ser CSV", "error")
+    rows = list(csv.DictReader(io.StringIO(_decode_csv_upload(await file.read()))))
+    if not rows:
+        return flash_redirect("/contacts", "El CSV no contiene contactos", "error")
+    created = updated = 0
+    try:
+        for index, row in enumerate(rows, start=2):
+            row = {key.strip(): (value or "").strip() for key, value in row.items() if key}
+            if not any(row.values()):
+                continue
+            contact_id = row.get("id")
+            contact = db.get(Contact, int(contact_id)) if contact_id else None
+            values = _contact_values_from_csv(row, active_default=contact.active if contact else True)
+            if contact:
+                for key, value in values.items():
+                    setattr(contact, key, value)
+                updated += 1
+            else:
+                db.add(Contact(**values))
+                created += 1
+    except (ValueError, HTTPException) as exc:
+        db.rollback()
+        detail = exc.detail if isinstance(exc, HTTPException) else str(exc)
+        return flash_redirect("/contacts", f"CSV no válido en la línea {index}: {detail}", "error")
+    db.commit()
+    return flash_redirect("/contacts", f"Importación completada: {created} creados, {updated} actualizados")
 
 
 @app.post("/contacts/{contact_id}")

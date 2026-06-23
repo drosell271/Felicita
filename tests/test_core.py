@@ -6,7 +6,7 @@ from app.services.latex import escape_latex, render_source
 from app.services.email_templates import render_message_template, validate_message_template
 from app.services.email_templates import ALLOWED_MARKERS
 from app.email_defaults import BIRTHDAY_BODY
-from app.main import _contact_values, _next_occurrence
+from app.main import _contact_values, _contact_values_from_csv, _next_occurrence, format_anniversary, format_day_month, years_since
 import pytest
 
 
@@ -65,3 +65,23 @@ def test_birth_date_uses_neutral_year():
     assert values["birth_date"] == date(2000, 2, 29)
     with pytest.raises(Exception):
         _contact_values("Ana", "López", "31", "2", "", "on")
+
+
+def test_contact_date_display_formats():
+    assert format_day_month(date(2000, 6, 24)) == "24 de junio"
+    assert years_since(date(2000, 6, 24), date(2026, 6, 23)) == 25
+    assert years_since(date(2000, 6, 24), date(2026, 6, 24)) == 26
+    assert format_anniversary(None) == "—"
+
+
+def test_contact_values_from_csv_accepts_bulk_formats():
+    values = _contact_values_from_csv({
+        "first_name": "Ana",
+        "last_name": "López",
+        "birth_date": "24/06",
+        "anniversary_date": "24.06.2000",
+        "active": "no",
+    })
+    assert values["birth_date"] == date(2000, 6, 24)
+    assert values["anniversary_date"] == date(2000, 6, 24)
+    assert values["active"] is False
