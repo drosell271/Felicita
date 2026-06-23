@@ -1,0 +1,33 @@
+\documentclass[12pt]{article}
+\usepackage[paperwidth=148mm,paperheight=210mm,margin=0mm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz,xcolor}
+\usetikzlibrary{calc}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\input{brand.tex}
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+
+\fill[paper] (current page.south west) rectangle (current page.north east);
+
+% Marco editorial
+\draw[navy,line width=.7pt] ([xshift=11mm,yshift=-11mm]current page.north west) rectangle ([xshift=-11mm,yshift=11mm]current page.south east);
+\draw[line,line width=.55pt] ([xshift=17mm,yshift=-17mm]current page.north west) rectangle ([xshift=-17mm,yshift=17mm]current page.south east);
+\draw[orange,line width=.85pt] ([xshift=22mm,yshift=-22mm]current page.north west) rectangle ([xshift=-22mm,yshift=22mm]current page.south east);
+
+\draw[line,line width=.6pt] ([xshift=35mm,yshift=-54mm]current page.north west)--([xshift=-35mm,yshift=-54mm]current page.north east);
+\draw[line,line width=.6pt] ([xshift=35mm,yshift=54mm]current page.south west)--([xshift=-35mm,yshift=54mm]current page.south east);
+
+\node[align=center,text=ink,text width=92mm] at (current page.center) {%
+{\sffamily\scriptsize\bfseries ANIVERSARIO}\\[9mm]
+{\fontsize{31}{35}\selectfont\bfseries {{NOMBRE}}}\\[8mm]
+{\sffamily\color{blue}\fontsize{50}{52}\selectfont\bfseries {{AÑOS}}\hspace{2mm}\fontsize{16}{18}\selectfont AÑOS}\\[13mm]
+{\sffamily\small \anniversaryMessage}};
+
+\node[anchor=north east,text=ink] at ([xshift=-25mm,yshift=-25mm]current page.north east) {\sffamily\scriptsize {{FECHA}}};
+\node[anchor=south west,text=ink] at ([xshift=25mm,yshift=25mm]current page.south west) {\sffamily\scriptsize FELICITA};
+\end{tikzpicture}
+\end{document}

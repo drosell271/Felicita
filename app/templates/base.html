@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Panel{% endblock %} · {{ app_name }}</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#111817">
+  <link rel="stylesheet" href="/static/app.css?v=5">
+  <link rel="stylesheet" href="/static/corporate.css?v=7">
+  <script src="/static/app.js?v=7" defer></script>
+</head>
+<body>
+  <div class="grain"></div>
+  <aside class="sidebar">
+    <a class="brand" href="/"><span class="brand-mark">F</span><span>Felicita<small>Correspondencia automática</small></span></a>
+    <nav>
+      <a href="/" class="{% if request.url.path == '/' %}active{% endif %}"><span>01</span> Resumen</a>
+      <a href="/contacts" class="{% if '/contacts' in request.url.path %}active{% endif %}"><span>02</span> Contactos</a>
+      <a href="/templates" class="{% if '/templates' in request.url.path %}active{% endif %}"><span>03</span> Plantillas</a>
+      <a href="/logs" class="{% if '/logs' in request.url.path %}active{% endif %}"><span>04</span> Registros</a>
+      <a href="/settings" class="{% if '/settings' in request.url.path %}active{% endif %}"><span>05</span> Configuración</a>
+    </nav>
+    <form action="/logout" method="post" class="logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Salir de la sesión ↗</button></form>
+  </aside>
+  <main>
+    {% if request.query_params.get('message') %}<div class="toast {{ request.query_params.get('kind', 'success') }}">{{ request.query_params.get('message') }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

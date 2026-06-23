@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Configuración{% endblock %}
+{% block content %}
+<header class="page-head compact">
+  <div>
+    <span class="eyebrow">Administración</span>
+    <h1>Configuración del sistema</h1>
+    <p>Parámetros de entrega, programación y contenido de los mensajes.</p>
+  </div>
+</header>
+
+<div class="settings-grid">
+  <section class="panel">
+    <div class="panel-number">01</div>
+    <span class="eyebrow">Entrega</span>
+    <h2>Servidor SMTP</h2>
+    <form action="/settings/smtp" method="post" class="form-grid">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label class="wide-field">Host<input name="smtp_host" value="{{ config.smtp_host or '' }}" placeholder="smtp.example.com" required></label>
+      <label>Puerto<input name="smtp_port" type="number" value="{{ config.smtp_port or 587 }}" min="1" max="65535" required></label>
+      <label>Seguridad<select name="smtp_security"><option value="starttls" {% if config.smtp_security == 'starttls' %}selected{% endif %}>STARTTLS</option><option value="ssl" {% if config.smtp_security == 'ssl' %}selected{% endif %}>SSL/TLS</option><option value="none" {% if config.smtp_security == 'none' %}selected{% endif %}>Sin cifrado</option></select></label>
+      <label>Usuario<input name="smtp_username" value="{{ config.smtp_username or '' }}"></label>
+      <label>Contraseña<input name="smtp_password" type="password" placeholder="{{ '•••••••• (sin cambios)' if config.smtp_password_encrypted else 'Contraseña' }}"></label>
+      <label>Email remitente<input name="sender_email" type="email" value="{{ config.sender_email or '' }}" required></label>
+      <label>Destinatario corporativo<input name="company_recipient_email" type="email" value="{{ config.company_recipient_email or '' }}" placeholder="empresa@ejemplo.com" required></label>
+      <label>Nombre remitente<input name="sender_name" value="{{ config.sender_name }}" required></label>
+      <div class="full form-actions"><span class="hint">Se hará LOGIN + NOOP antes de persistir.</span><button class="primary">Probar y guardar</button></div>
+    </form>
+    {% if config.smtp_host and config.company_recipient_email %}<form action="/settings/smtp/test" method="post" class="smtp-test"><input type="hidden" name="csrf" value="{{ csrf }}"><span>Envía una tarjeta de prueba al destinatario corporativo.</span><button class="outline">Enviar email de prueba</button></form>{% endif %}
+  </section>
+
+  <section class="panel schedule-panel">
+    <div class="panel-number">02</div>
+    <span class="eyebrow">Programación</span>
+    <h2>Hora de envío</h2>
+    <p>Una única comprobación diaria en la zona horaria configurada.</p>
+    <form action="/settings/schedule" method="post">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <label class="clock"><input type="time" name="send_time" value="{{ config.send_time }}" required></label>
+      <button class="outline wide">Actualizar horario</button>
+    </form>
+    <div class="note">Cada envío incluye una tarjeta PNG elegida aleatoriamente entre tres diseños.</div>
+  </section>
+</div>
+
+<section class="panel email-editor">
+  <div class="panel-number">03</div>
+  <div class="editor-intro">
+    <div><span class="eyebrow">Contenido</span><h2>Plantillas de email</h2></div>
+    <div class="marker-help"><span>Marcadores disponibles · AÑOS solo para aniversarios</span><code>{{ '{{NOMBRE}}' }}</code><code>{{ '{{APELLIDO}}' }}</code><code>{{ '{{AÑOS}}' }}</code><code>{{ '{{FECHA}}' }}</code></div>
+  </div>
+  <form action="/settings/emails" method="post" class="mail-template-form">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <article class="mail-sheet birthday-sheet">
+      <span class="mail-type">Cumpleaños</span>
+      <label>Asunto<input name="birthday_subject" value="{{ birthday_subject }}" maxlength="200" required></label>
+      <label>Cuerpo<textarea name="birthday_body" rows="8" maxlength="5000" required>{{ birthday_body }}</textarea></label>
+      <small>La tarjeta de cumpleaños aparecerá integrada debajo del texto.</small>
+    </article>
+    <article class="mail-sheet anniversary-sheet">
+      <span class="mail-type">Aniversario</span>
+      <label>Asunto<input name="anniversary_subject" value="{{ anniversary_subject }}" maxlength="200" required></label>
+      <label>Cuerpo<textarea name="anniversary_body" rows="8" maxlength="5000" required>{{ anniversary_body }}</textarea></label>
+      <small>El destinatario recibirá texto plano y versión HTML compatible.</small>
+    </article>
+    <div class="editor-submit"><span>Los cambios se aplican a los próximos envíos.</span><button class="primary">Guardar mensajes</button></div>
+  </form>
+</section>
+{% endblock %}

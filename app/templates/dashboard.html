@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block title %}Resumen{% endblock %}{% block content %}
+<header class="page-head"><div><span class="eyebrow">Administración</span><h1>Panel de comunicaciones</h1><p>Estado general de contactos, programación y envíos.</p></div><form action="/dispatch/run" method="post"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="outline">Ejecutar comprobación</button></form></header>
+<section class="stats">
+  <article><span>Contactos</span><strong>{{ stats.contacts }}</strong><small>{{ stats.active }} activos</small></article>
+  <article class="accent"><span>Envíos completados</span><strong>{{ stats.sent }}</strong><small>histórico total</small></article>
+  <article><span>Próxima ejecución</span><strong class="time">{{ config.send_time }}</strong><small>{{ timezone }}</small></article>
+  <article><span>Incidencias</span><strong>{{ stats.failed }}</strong><small>requieren revisión</small></article>
+</section>
+<section class="section-head"><div><span class="eyebrow">Próximos 30 días</span><h2>Eventos programados</h2></div><a href="/contacts" class="text-link">Ver directorio</a></section>
+<div class="upcoming-grid">
+{% for item in upcoming %}<article><span class="event-date">{{ item.date.strftime('%d %b') }}</span><div><strong>{{ item.contact.first_name }} {{ item.contact.last_name }}</strong><small>{{ 'Cumpleaños' if item.event_type == 'birthday' else 'Aniversario' }} · {{ 'Hoy' if item.days == 0 else item.days|string + ' días' }}</small></div></article>
+{% else %}<p class="empty-card">No hay eventos durante los próximos 30 días.</p>{% endfor %}
+</div>
+<section class="section-head"><div><span class="eyebrow">Actividad</span><h2>Últimos envíos</h2></div><a href="/contacts" class="text-link">Gestionar contactos</a></section>
+<div class="table-wrap"><table><thead><tr><th>Destinatario</th><th>Ocasión</th><th>Plantilla</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
+{% for log in recent %}<tr><td><strong>{{ log.contact_name }}</strong><small>{{ log.recipient_email }}</small></td><td>{{ 'Cumpleaños' if log.event_type == 'birthday' else 'Aniversario' }}</td><td>{{ log.template_name or '—' }}</td><td>{{ log.event_date.strftime('%d.%m.%Y') }}</td><td><span class="status {{ log.status }}">{{ {'sent':'Enviado','failed':'Error','processing':'Procesando'}[log.status] }}</span></td></tr>
+{% else %}<tr><td colspan="5" class="empty">No hay envíos registrados.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

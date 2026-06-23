@@ -1,0 +1,36 @@
+\documentclass[12pt]{article}
+\usepackage[paperwidth=148mm,paperheight=210mm,margin=0mm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz,xcolor}
+\usetikzlibrary{calc}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\input{brand.tex}
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+
+\fill[softgreen] (current page.south west) rectangle (current page.north east);
+\fill[paper] ([xshift=16mm,yshift=-24mm]current page.north west) rectangle ([xshift=-16mm,yshift=24mm]current page.south east);
+\draw[green,line width=.8pt] ([xshift=14mm,yshift=-14mm]current page.north west) rectangle ([xshift=-14mm,yshift=14mm]current page.south east);
+\draw[line,line width=.45pt] ([xshift=20mm,yshift=-30mm]current page.north west) rectangle ([xshift=-20mm,yshift=30mm]current page.south east);
+
+% Motivo botánico minimalista
+\draw[green,line width=.75pt] ([xshift=31mm,yshift=-53mm]current page.north west)
+  .. controls ++(6mm,-25mm) and ++(-5mm,25mm) .. ([xshift=31mm,yshift=-160mm]current page.north west);
+\foreach \y/\rot in {62/30,82/-30,103/30,125/-30,146/30}{
+  \begin{scope}[shift={([xshift=32mm,yshift=-\y mm]current page.north west)},rotate=\rot]
+    \draw[green,line width=.55pt] (0,0) ellipse [x radius=2.8mm,y radius=7.5mm];
+    \draw[green,line width=.35pt] (0,-5.7mm)--(0,5.7mm);
+  \end{scope}
+}
+
+\node[anchor=north west,text=green] at ([xshift=22mm,yshift=-29mm]current page.north west) {\sffamily\scriptsize\bfseries CUMPLEAÑOS};
+\node[anchor=west,align=left,text=ink,text width=72mm] at ([xshift=54mm,yshift=-3mm]current page.west) {%
+{\fontsize{29}{33}\selectfont\bfseries {{NOMBRE}}}\\[9mm]
+{\sffamily\color{blue}\fontsize{22}{26}\selectfont\bfseries HOY ES TU DÍA}\\[12mm]
+{\sffamily\large \birthdayMessage}};
+\node[anchor=south east,text=ink] at ([xshift=-21mm,yshift=29mm]current page.south east) {\sffamily\scriptsize {{FECHA}}};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,25 @@
+services:
+  felicita:
+    build: .
+    container_name: felicita
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    environment:
+      APP_SECRET: ${APP_SECRET:?Define APP_SECRET in .env}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Define ADMIN_PASSWORD in .env}
+      DATABASE_URL: sqlite:////app/data/felicita.db
+      TIMEZONE: ${TIMEZONE:-Europe/Madrid}
+      TZ: ${TIMEZONE:-Europe/Madrid}
+      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-false}
+      LOGIN_MAX_ATTEMPTS: ${LOGIN_MAX_ATTEMPTS:-5}
+      LOGIN_WINDOW_MINUTES: ${LOGIN_WINDOW_MINUTES:-15}
+      PROCESSING_STALE_MINUTES: ${PROCESSING_STALE_MINUTES:-30}
+    volumes:
+      - felicita_data:/app/data
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  felicita_data:

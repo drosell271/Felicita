@@ -1,0 +1,35 @@
+\documentclass[12pt]{article}
+\usepackage[paperwidth=148mm,paperheight=210mm,margin=0mm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz,xcolor}
+\usetikzlibrary{calc}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\input{brand.tex}
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+
+\fill[warm] (current page.south west) rectangle (current page.north east);
+\fill[paper] ([xshift=17mm,yshift=-24mm]current page.north west) rectangle ([xshift=-17mm,yshift=24mm]current page.south east);
+\draw[navy,line width=.75pt] ([xshift=14mm,yshift=-14mm]current page.north west) rectangle ([xshift=-14mm,yshift=14mm]current page.south east);
+\fill[blue] ([xshift=-9mm,yshift=-22mm]current page.north east) circle (24mm);
+\fill[orange] ([xshift=3mm,yshift=17mm]current page.south west) circle (14mm);
+
+% Confeti reducido
+\foreach \x/\y/\r/\c in {25/42/1.1/navy,119/72/1.1/blue,28/166/1.2/orange,124/180/1/navy,42/195/.9/blue}{
+  \fill[\c] ([xshift=\x mm,yshift=-\y mm]current page.north west) circle (\r mm);
+}
+\foreach \x/\y/\c in {31/64/blue,111/142/orange,42/181/navy}{
+  \draw[\c,line width=1.35pt] ([xshift=\x mm,yshift=-\y mm]current page.north west)--++(6mm,-6mm);
+}
+
+\node[anchor=north west,text=ink] at ([xshift=23mm,yshift=-31mm]current page.north west) {\sffamily\scriptsize\bfseries CUMPLEAÑOS};
+\node[anchor=west,align=left,text=ink,text width=98mm] at ([xshift=24mm,yshift=2mm]current page.west) {%
+{\fontsize{34}{38}\selectfont\bfseries {{NOMBRE}}}\\[8mm]
+{\sffamily\color{blue}\fontsize{27}{31}\selectfont\bfseries FELIZ CUMPLEAÑOS}\\[13mm]
+{\sffamily\large \birthdayMessage}};
+\node[anchor=south east,text=ink] at ([xshift=-23mm,yshift=23mm]current page.south east) {\sffamily\scriptsize {{FECHA}}};
+\end{tikzpicture}
+\end{document}

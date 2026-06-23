@@ -1,0 +1,32 @@
+\documentclass[12pt]{article}
+\usepackage[paperwidth=148mm,paperheight=210mm,margin=0mm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz,xcolor}
+\usetikzlibrary{calc}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\input{brand.tex}
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+
+\fill[navy] (current page.south west) rectangle (current page.north east);
+
+% Composición geométrica limpia
+\fill[blue] (current page.north west)--([xshift=98mm]current page.north west)--([xshift=26mm,yshift=-92mm]current page.north west)--cycle;
+\fill[orange] (current page.south east)--([xshift=-82mm]current page.south east)--([xshift=-22mm,yshift=85mm]current page.south east)--cycle;
+\fill[paper] ([xshift=22mm,yshift=-45mm]current page.north west) rectangle ([xshift=-22mm,yshift=45mm]current page.south east);
+\draw[line,line width=4.5mm] ([xshift=22mm,yshift=-45mm]current page.north west) rectangle ([xshift=-22mm,yshift=45mm]current page.south east);
+\draw[paper!55,line width=.45pt] ([xshift=12mm,yshift=-12mm]current page.north west) rectangle ([xshift=-12mm,yshift=12mm]current page.south east);
+
+\node[align=center,text=ink,text width=92mm] at (current page.center) {%
+{\sffamily\scriptsize\bfseries ANIVERSARIO}\\[8mm]
+{\fontsize{23}{27}\selectfont\bfseries {{NOMBRE}}}\\[1mm]
+{\fontsize{23}{27}\selectfont\bfseries {{APELLIDO}}}\\[8mm]
+{\sffamily\color{blue}\fontsize{49}{51}\selectfont\bfseries {{AÑOS}}\hspace{2mm}\fontsize{16}{18}\selectfont AÑOS}\\[12mm]
+{\sffamily\small \anniversaryMessage}};
+
+\node[anchor=south,fill=paper,text=ink,inner xsep=4mm,inner ysep=2mm] at ([yshift=17mm]current page.south) {\sffamily\scriptsize\bfseries CELEBRAMOS CONTIGO};
+\end{tikzpicture}
+\end{document}

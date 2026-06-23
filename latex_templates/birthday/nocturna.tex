@@ -1,0 +1,33 @@
+\documentclass[12pt]{article}
+\usepackage[paperwidth=148mm,paperheight=210mm,margin=0mm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{tikz,xcolor}
+\usetikzlibrary{calc}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\input{brand.tex}
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+
+\fill[navy] (current page.south west) rectangle (current page.north east);
+\fill[blue!18!navy] ([yshift=-62mm]current page.north west) rectangle (current page.south east);
+\draw[blue,line width=13mm] ([xshift=-5mm,yshift=-11mm]current page.north east) circle (35mm);
+\draw[orange,line width=3.8mm] ([xshift=8mm,yshift=14mm]current page.south west) circle (28mm);
+\draw[paper!28,line width=.6pt] ([xshift=17mm,yshift=-17mm]current page.north west) rectangle ([xshift=-17mm,yshift=17mm]current page.south east);
+
+% Puntos de luz, discretos
+\foreach \x/\y/\r in {17/27/.45,37/20/.38,67/31/.5,112/20/.42,131/48/.52,23/95/.42,122/125/.45,36/178/.5,108/190/.42,75/82/.38}{
+  \fill[paper!80] ([xshift=\x mm,yshift=-\y mm]current page.north west) circle (\r mm);
+}
+
+\node[anchor=north west,text=orange] at ([xshift=20mm,yshift=-20mm]current page.north west) {\sffamily\scriptsize\bfseries CELEBRACIÓN};
+\node[align=center,text=paper,text width=110mm] at (current page.center) {%
+{\sffamily\scriptsize CUMPLEAÑOS}\\[10mm]
+{\fontsize{38}{42}\selectfont\bfseries {{NOMBRE}}}\\[9mm]
+{\sffamily\color{orange}\fontsize{26}{30}\selectfont\bfseries HOY TODO BRILLA}\\[14mm]
+{\sffamily\large \birthdayMessage}};
+\node[anchor=south east,text=paper] at ([xshift=-19mm,yshift=19mm]current page.south east) {\sffamily\scriptsize {{FECHA}}};
+\end{tikzpicture}
+\end{document}
