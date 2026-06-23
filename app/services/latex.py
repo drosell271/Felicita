@@ -26,12 +26,34 @@ def available_templates(event_type: str) -> list[str]:
 
 
 def template_source(event_type: str, name: str) -> str:
+    return template_path(event_type, name).read_text(encoding="utf-8")
+
+
+def template_path(event_type: str, name: str) -> Path:
     if not re.fullmatch(r"[a-z0-9_-]+", name) or event_type not in {"birthday", "anniversary"}:
         raise LatexError("Nombre de plantilla no válido")
     path = get_settings().templates_dir / event_type / f"{name}.tex"
     if not path.is_file():
         raise LatexError("La plantilla no existe")
-    return path.read_text(encoding="utf-8")
+    return path
+
+
+def validate_template_source(event_type: str, source: str) -> None:
+    allowed = {"NOMBRE", "APELLIDO", "FECHA"}
+    if event_type == "anniversary":
+        allowed.add("AÑOS")
+    markers = set(re.findall(r"\{\{([^}]+)\}\}", source))
+    unknown = sorted(markers - allowed)
+    if unknown:
+        raise LatexError(f"Marcadores no permitidos: {', '.join('{{' + marker + '}}' for marker in unknown)}")
+    if event_type == "birthday" and "AÑOS" in markers:
+        raise LatexError("Las plantillas de cumpleaños no pueden mostrar la edad")
+
+
+def save_template_source(event_type: str, name: str, source: str) -> None:
+    path = template_path(event_type, name)
+    validate_template_source(event_type, source)
+    path.write_text(source, encoding="utf-8")
 
 
 def render_source(source: str, context: dict[str, object]) -> str:

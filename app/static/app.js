@@ -57,13 +57,63 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('contact-title').textContent = 'Editar contacto';
     document.getElementById('contact-dialog').showModal();
   }));
+  const sourceForm = document.getElementById('source-form');
+  const sourceEditor = document.getElementById('source-code');
+  const sourceStatus = document.getElementById('source-status');
+  const sourceSave = document.getElementById('source-save');
   document.querySelectorAll('.source-button').forEach(button => button.addEventListener('click', async () => {
     const dialog = document.getElementById('source-dialog');
     document.getElementById('source-title').textContent = button.dataset.name.replaceAll('_', ' ');
-    document.getElementById('source-code').textContent = 'Cargando…';
+    sourceEditor.value = 'Cargando...';
+    sourceEditor.disabled = true;
+    sourceSave.disabled = true;
+    sourceStatus.textContent = '';
+    sourceForm.dataset.saveUrl = button.dataset.saveUrl;
+    sourceForm.dataset.preview = button.dataset.preview;
     dialog.showModal();
-    try { const response = await fetch(button.dataset.url); const data = await response.json(); document.getElementById('source-code').textContent = data.source || data.detail; }
-    catch { document.getElementById('source-code').textContent = 'No se pudo cargar la plantilla.'; }
+    try {
+      const response = await fetch(button.dataset.url);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'No se pudo cargar la plantilla.');
+      sourceEditor.value = data.source;
+      sourceEditor.disabled = false;
+      sourceSave.disabled = false;
+      sourceEditor.focus();
+    } catch (error) {
+      sourceEditor.value = error.message || 'No se pudo cargar la plantilla.';
+      sourceStatus.textContent = 'Error de carga';
+    }
   }));
+  sourceForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    sourceSave.disabled = true;
+    sourceStatus.textContent = 'Guardando...';
+    const data = new FormData(sourceForm);
+    try {
+      const response = await fetch(sourceForm.dataset.saveUrl, { method: 'POST', body: data });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || 'No se pudo guardar.');
+      sourceStatus.textContent = payload.message || 'Plantilla guardada';
+      const preview = document.querySelector(`img[data-preview="${sourceForm.dataset.preview}"]`);
+      if (preview && payload.preview_version) {
+        const url = new URL(preview.src);
+        url.searchParams.set('v', payload.preview_version);
+        const shell = preview.closest('.preview-shell');
+        const done = () => shell?.classList.remove('is-loading');
+        const fail = () => { shell?.classList.remove('is-loading'); shell?.classList.add('has-error'); };
+        shell?.classList.add('is-loading');
+        shell?.classList.remove('has-error');
+        preview.addEventListener('load', done, { once: true });
+        preview.addEventListener('error', fail, { once: true });
+        preview.src = url.toString();
+        const link = preview.closest('.template-card')?.querySelector('.card-actions a');
+        if (link) link.href = url.toString();
+      }
+    } catch (error) {
+      sourceStatus.textContent = error.message || 'No se pudo guardar.';
+    } finally {
+      sourceSave.disabled = false;
+    }
+  });
   const toast = document.querySelector('.toast'); if (toast) setTimeout(() => toast.remove(), 5000);
 });

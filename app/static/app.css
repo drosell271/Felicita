@@ -57,8 +57,11 @@ dialog { width: min(650px, calc(100% - 30px)); color: inherit; }
 .card-art i { width: 40px; border-top: 2px solid; }
 .card-meta, .card-actions { display: flex; align-items: center; justify-content: space-between; }
 .card-actions a, .card-actions button { padding: 0; border: 0; background: none; cursor: pointer; color: inherit; }
-.source-dialog { width: min(900px, calc(100% - 30px)); }
-.source-dialog pre { max-height: 60vh; overflow: auto; }
+.source-dialog { width: min(1000px, calc(100% - 30px)); }
+.source-form { display: grid; gap: 14px; }
+.source-editor, #source-code { min-height: 52vh; resize: vertical; }
+.source-actions { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+#source-status { margin-right: auto; }
 .login-page { display: grid; min-height: 100vh; }
 .login-art { position: relative; display: flex; min-height: 100vh; flex-direction: column; justify-content: center; overflow: hidden; }
 .login-art p, .login-art span { z-index: 1; text-transform: uppercase; letter-spacing: .2em; }

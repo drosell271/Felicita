@@ -30,7 +30,7 @@ from .security import (csrf_token, decrypt_secret, encrypt_secret, login_limiter
                        require_auth, valid_credentials, validate_csrf)
 from .services.dispatch import dispatch_daily, retry_log, smtp_config_from_settings
 from .services.email_templates import ALLOWED_MARKERS, validate_message_template
-from .services.latex import LatexError, available_templates, compile_image, template_source
+from .services.latex import LatexError, available_templates, compile_image, save_template_source, template_source
 from .services.mailer import SMTPConfig, send_card, test_connection
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -530,6 +530,20 @@ def get_template_source(event_type: str, name: str, request: Request):
     require_auth(request)
     try: return JSONResponse({"source": template_source(event_type, name)})
     except LatexError as exc: raise HTTPException(404, str(exc)) from exc
+
+
+@app.post("/templates/{event_type}/{name}/source")
+def update_template_source(event_type: str, name: str, request: Request,
+                           source: str = Form(...), csrf: str = Form(...)):
+    require_auth(request); validate_csrf(request, csrf)
+    if not source.strip():
+        raise HTTPException(422, "La plantilla no puede estar vacía")
+    try:
+        save_template_source(event_type, name, source)
+        _cached_preview.cache_clear()
+        return JSONResponse({"message": "Plantilla guardada", "preview_version": _preview_stamp(event_type, name)})
+    except LatexError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.get("/templates/{event_type}/{name}/preview")

@@ -2,7 +2,7 @@ from datetime import date
 from pathlib import Path
 
 from app.services.dispatch import _matches_today, _years_since
-from app.services.latex import escape_latex, render_source
+from app.services.latex import escape_latex, render_source, validate_template_source
 from app.services.email_templates import render_message_template, validate_message_template
 from app.services.email_templates import ALLOWED_MARKERS
 from app.email_defaults import BIRTHDAY_BODY
@@ -85,3 +85,11 @@ def test_contact_values_from_csv_accepts_bulk_formats():
     assert values["birth_date"] == date(2000, 6, 24)
     assert values["anniversary_date"] == date(2000, 6, 24)
     assert values["active"] is False
+
+
+def test_template_source_marker_validation():
+    validate_template_source("anniversary", "Hola {{NOMBRE}}, {{AÑOS}} años")
+    with pytest.raises(Exception):
+        validate_template_source("birthday", "Hola {{NOMBRE}}, {{AÑOS}} años")
+    with pytest.raises(Exception):
+        validate_template_source("anniversary", "Hola {{DESCONOCIDO}}")

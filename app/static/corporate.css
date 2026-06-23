@@ -244,7 +244,13 @@ dialog { padding: 34px; border: 2px solid var(--ink); border-radius: 14px; backg
 dialog::backdrop { background: rgba(21,26,25,.72); backdrop-filter: blur(3px); }
 .dialog-close button { width: 40px; height: 40px; border: 2px solid var(--ink); border-radius: 50%; background: white; color: var(--ink); font-size: 24px; }
 .dialog-title p { color: var(--muted); font-size: 14px; }
-.source-dialog pre { padding: 20px; border-radius: 9px; background: var(--ink); color: #e9edff; font-size: 13px; }
+.source-form h2 { margin-bottom: 2px; }
+#source-code {
+  padding: 18px; border-color: var(--ink); background: var(--ink); color: #e9edff;
+  font: 13px/1.5 "Cascadia Mono", "Consolas", "Courier New", monospace; tab-size: 2;
+}
+#source-code:focus { border-color: var(--orange); box-shadow: 0 0 0 4px rgba(255,127,42,.18); }
+#source-status { color: var(--muted); font-size: 13px; font-weight: 750; }
 
 .toast { border: 2px solid var(--ink); border-left: 10px solid var(--blue); border-radius: 10px; background: white; color: var(--ink); box-shadow: 6px 6px 0 var(--ink); font-size: 14px; }
 .toast.error { border-left-color: var(--danger); }
