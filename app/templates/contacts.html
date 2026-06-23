@@ -9,8 +9,8 @@
     <a class="outline" href="/contacts/export">Exportar CSV</a>
     <form class="import-form" action="/contacts/import" method="post" enctype="multipart/form-data">
       <input type="hidden" name="csrf" value="{{ csrf }}">
-      <input name="file" type="file" accept=".csv,text/csv" required>
-      <button class="outline">Importar</button>
+      <input class="sr-only import-file" name="file" type="file" accept=".csv,text/csv" required>
+      <button class="outline" type="button" data-import-file>Importar</button>
     </form>
     <button class="primary" data-new-contact>Añadir contacto</button>
   </div>

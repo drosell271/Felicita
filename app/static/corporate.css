@@ -67,10 +67,6 @@ main { max-width: 1800px; min-height: 100vh; margin-left: 272px; padding: 48px c
 .eyebrow { color: var(--blue-dark); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
 .header-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
 .import-form { display: flex; align-items: center; gap: 8px; }
-.import-form input[type="file"] {
-  width: 230px; min-height: 44px; padding: 8px 10px; border: 2px solid var(--ink);
-  border-radius: 8px; background: white; font-size: 13px;
-}
 
 .primary, .outline, .ghost, .icon, .card-actions a, .card-actions button {
   min-height: 44px; border-radius: 8px; font-size: 14px; font-weight: 750; transition: .18s ease;
@@ -307,7 +303,7 @@ details pre { font-size: 12px; }
   .page-head, .page-head.compact { align-items: flex-start; flex-direction: column; }
   .page-head h1, .page-head.compact h1 { font-size: 39px; }
   .header-actions, .import-form { align-items: stretch; flex-direction: column; width: 100%; }
-  .header-actions .primary, .header-actions .outline, .import-form input[type="file"], .import-form button { width: 100%; }
+  .header-actions .primary, .header-actions .outline, .import-form button { width: 100%; }
   .stats, .upcoming-grid, .template-grid, .mail-template-form { grid-template-columns: 1fr; }
   .filter-bar { align-items: stretch; flex-direction: column; }
   .filter-bar input, .filter-bar select { min-width: 0; }

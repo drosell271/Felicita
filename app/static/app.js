@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     resetContactForm();
     contactDialog?.showModal();
   }));
+  document.querySelectorAll('[data-import-file]').forEach(button => button.addEventListener('click', () => {
+    const form = button.closest('form');
+    form?.querySelector('.import-file')?.click();
+  }));
+  document.querySelectorAll('.import-file').forEach(input => input.addEventListener('change', () => {
+    if (input.files.length > 0) input.closest('form')?.submit();
+  }));
   contactForm?.addEventListener('submit', () => {
     contactForm.querySelectorAll('button[type="submit"], button:not([type])').forEach(button => {
       button.disabled = true;
