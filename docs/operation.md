@@ -22,11 +22,15 @@ docker compose up --build -d
 5. Ajusta la hora diaria de envío.
 6. Revisa las plantillas y los textos de email.
 
+![Configuración SMTP, horario y textos de email](assets/screenshots/settings.png)
+
 ## Logs y reintentos
 
 La sección Registros muestra envíos correctos, fallidos y en proceso. Un fallo se puede reintentar desde la UI.
 
 Los envíos `processing` se consideran recuperables tras el tiempo definido en `PROCESSING_STALE_MINUTES`.
+
+![Registros de envío](assets/screenshots/logs.png)
 
 ## Backup
 

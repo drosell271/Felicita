@@ -1,6 +1,12 @@
+<p align="center">
+  <img src="docs/assets/brand/felicita-logo.svg" alt="Logo de Felicita" width="96">
+</p>
+
 # Felicita
 
 Felicita es un panel web para automatizar felicitaciones corporativas de cumpleaños y aniversarios. Genera tarjetas desde plantillas LaTeX, las convierte a PNG y las envía al destinatario corporativo configurado por SMTP.
+
+![Panel de comunicaciones de Felicita](docs/assets/screenshots/dashboard.png)
 
 ## Inicio rápido
 
@@ -45,6 +51,7 @@ python -m venv .venv
 - [Arquitectura](docs/architecture.md)
 - [Operación](docs/operation.md)
 - [Plantillas](docs/templates.md)
+- [Guía visual](docs/visual-guide.md)
 
 ## Notas de producción
 

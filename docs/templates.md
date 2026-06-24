@@ -11,6 +11,8 @@ latex_templates/anniversary/
 
 Cada carpeta contiene tres `.tex`. En cada envío se selecciona una plantilla aleatoria del tipo correspondiente.
 
+![Vista de plantillas de tarjetas](assets/screenshots/templates.png)
+
 ## Marcadores
 
 Marcadores disponibles:
